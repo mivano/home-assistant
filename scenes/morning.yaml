@@ -1,0 +1,18 @@
+#
+# Morning Lights
+#
+- name: Morning Lights
+  entities:
+    light.woonkamer:
+      state: on
+      brightness: 90
+      transition: 3
+    light.keuken:
+      state: on
+      brightness: 95
+      transition: 3
+    light.eetkamer:
+      state: on
+      brightness: 95
+      transition: 2
+

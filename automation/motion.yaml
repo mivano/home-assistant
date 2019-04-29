@@ -1,0 +1,61 @@
+- alias: Turn on garden path lights
+  initial_state: 'on'
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.voortuin
+      to: 'on'
+    - platform: state
+      entity_id: binary_sensor.ring_front_door_motion
+      to: 'on'  
+    - platform: state
+      entity_id: devices.tracked_users
+      to: 'home'
+  condition:
+    condition: or
+    conditions:
+    - condition: sun
+      after: sunset
+    - condition: sun
+      before: sunrise
+  action:
+    - service: scene.turn_on
+      entity_id: scene.front_garden_path_on
+    - service: variable.set_variable
+      data:
+        variable: motion_garden
+        value: "triggered"
+
+- alias: Turn off garden path lights x minutes after last movement
+  initial_state: 'on'
+  trigger:
+    platform: state
+    entity_id: variable.motion_garden
+    to: 'triggered'
+    for:
+      minutes: 3
+  condition:
+    - condition: state
+      entity_id: variable.motion_garden
+      state: 'triggered'
+  action:
+    - service: scene.turn_on
+      entity_id: scene.front_garden_path_off 
+    - service: variable.set_variable
+      data:
+        variable: motion_garden
+        value: "no_motion"
+
+- alias: Motion Sensor Reset Off
+  initial_state: 'on'
+  hide_entity: yes
+  trigger:
+    platform: state
+    entity_id: binary_sensor.voortuin
+    to: 'on'
+    for:
+      seconds: 3 # Trigger once the sensor has been in the to state for 3sec
+  action:
+    - service: mqtt.publish 
+      data:
+        topic: 'tele/sonoffrf/RESULT'
+        payload: '0'

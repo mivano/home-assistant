@@ -1,0 +1,166 @@
+- alias: 'ALARM ALERT - Door Open'
+  initial_state: 'on'
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.voordeur
+      to: 'on'
+  condition:
+    - condition: state
+      entity_id: alarm_control_panel.ha_alarm
+      state: 'armed_away'
+    - condition: state
+      entity_id: input_boolean.alarm_override
+      state: 'off'
+  action:
+    - service: alarm_control_panel.alarm_trigger
+      entity_id: alarm_control_panel.ha_alarm
+    - service: notify.ios_iphone_van_michiel
+      data:
+        title: "ALARM ALERT"
+        message: "Front door opened\n{{ states.sensor.date__time.state }}"
+        data: 
+          attachment:
+            content-type: jpeg
+          push:
+            category: camera
+          entity_id: camera.front_door
+
+
+- alias: 'Trigger alarm while armed away'
+  initial_state: 'on'
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.sensor_3
+      to: 'on'
+    - platform: state
+      entity_id: binary_sensor.keukenraam
+      to: 'on'
+    - platform: state
+      entity_id: binary_sensor.voordeur
+      to: 'on'
+    - platform: state
+      entity_id: sensor.window
+      to: 'open'
+  condition:
+    - condition: state
+      entity_id: alarm_control_panel.ha_alarm
+      state: armed_away
+    - condition: state
+      entity_id: input_boolean.alarm_override
+      state: 'off'
+  action:
+    service: alarm_control_panel.alarm_trigger
+    entity_id: alarm_control_panel.ha_alarm
+
+- alias: 'Send notification when alarm triggered'
+  trigger:
+    - platform: state
+      entity_id: alarm_control_panel.ha_alarm
+      to: 'triggered'
+  action:
+    - service: notify.ios_iphone_van_michiel
+      data:
+        title: "ALARM ALERT"
+        message: "Alarm triggered!"
+        data: 
+          attachment:
+            content-type: jpeg
+          push:
+            category: camera
+          entity_id: camera.front_door
+
+# If tracked_users leave and no guests are here, arm away
+- alias: 'Alarm - House Empty, Arm Away'
+  initial_state: 'off'
+  trigger:
+    - platform: state
+      entity_id: group.tracked_users
+      to: 'not_home'
+  condition:
+    - condition: state
+      entity_id: input_boolean.guest_mode
+      state: 'off'
+    - condition: state
+      entity_id: input_boolean.alarm_override
+      state: 'off'
+  action:
+    - service: script.turn_on
+      entity_id: script.alarm_arm_away
+
+- alias: 'Alarm - Arm Home'
+  initial_state: 'on'
+  trigger:
+    - platform: state
+      entity_id: group.tracked_users
+      to: 'home'
+  condition:
+    - condition: state
+      entity_id: input_boolean.guest_mode
+      state: 'off'
+    - condition: state
+      entity_id: input_boolean.alarm_override
+      state: 'off'
+  action:
+    - service: script.turn_on
+      entity_id: script.alarm_arm_home
+
+## Announce
+
+- alias: 'Alarm Announce - Armed Home'
+  initial_state: 'on'
+  trigger:
+    - platform: state
+      entity_id: alarm_control_panel.ha_alarm
+      to: 'armed_home'
+  condition:
+    - condition: time
+      after: '08:30:00'
+    - condition: state
+      entity_id: input_boolean.alarm_override
+      state: 'off'
+  action:
+    - delay: "00:00:02"
+    - service: tts.google_say
+      entity_id: media_player.googlehome8236
+      data_template:
+        message: 'The alarm is now armed home'
+
+
+- alias: 'Alarm Announce - Armed Away'
+  initial_state: 'on'
+  trigger:
+    - platform: state
+      entity_id: alarm_control_panel.ha_alarm
+      to: 'armed_away'
+  condition:
+    - condition: time
+      after: '08:30:00'
+    - condition: state
+      entity_id: input_boolean.alarm_override
+      state: 'off'
+  action:
+    - delay: "00:00:02"
+    - service: tts.google_say
+      entity_id: media_player.googlehome8236
+      data_template:
+        message: 'The alarm is now set to armed away'
+
+# If alarm is disarmed, announce
+- alias: 'Alarm Announce - Disarmed'
+  initial_state: 'on'
+  trigger:
+    - platform: state
+      entity_id: alarm_control_panel.ha_alarm
+      to: 'disarmed'
+  condition:
+    - condition: time
+      after: '08:30:00'
+    - condition: state
+      entity_id: input_boolean.alarm_override
+      state: 'off'
+  action:
+    - delay: "00:00:01"
+    - service: tts.google_say
+      entity_id: media_player.googlehome8236
+      data_template:
+        message: 'Alarm is now disarmed'

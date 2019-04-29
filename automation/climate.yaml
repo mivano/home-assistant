@@ -1,0 +1,70 @@
+- alias: Turn on Badkamer in morning on weekday
+  initial_state: 'off'
+  trigger:
+    - platform: time
+      at: "05:00:00"
+  condition:
+    - condition: time
+      weekday:
+      - mon
+      - tue
+      - wed
+      - thu
+      - fri
+  action:
+    - service: climate.set_temperature
+      data:
+        entity_id: climate.danfoss_devolo_home_control_radiator_thermostat_heating_1
+        temperature: 24
+
+- alias: Turn off Badkamer in morning on weekday
+  initial_state: 'off'
+  trigger:
+    - platform: time
+      at: "08:00:00"
+     
+  condition:
+    - condition: time
+      weekday:
+      - mon
+      - tue
+      - wed
+      - thu
+      - fri
+  action:
+    - service: climate.set_temperature
+      data:
+        entity_id: climate.danfoss_devolo_home_control_radiator_thermostat_heating_1
+        temperature: 16
+
+- alias: Turn on Badkamer in morning on weekend
+  initial_state: 'off'
+  trigger:
+    - platform: time
+      at: "06:30:00"
+  condition:
+    - condition: time
+      weekday:
+      - sat
+      - sun
+  action:
+    - service: climate.set_temperature
+      data:
+        entity_id: climate.danfoss_devolo_home_control_radiator_thermostat_heating_1
+        temperature: 24
+
+- alias: Turn off Badkamer in morning on weekend
+  initial_state: 'off'
+  trigger:
+    - platform: time
+      at: "09:00:00"
+  condition:
+    - condition: time
+      weekday:
+      - sat
+      - sun
+  action:
+    - service: climate.set_temperature
+      data:
+        entity_id: climate.danfoss_devolo_home_control_radiator_thermostat_heating_1
+        temperature: 16

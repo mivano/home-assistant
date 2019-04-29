@@ -1,0 +1,44 @@
+- alias: Washingmachine is on
+  initial_state: 'on'
+  hide_entity: false
+  trigger:
+    platform: numeric_state
+    entity_id: sensor.wasmachine_energy_power
+    above: 10
+  condition:
+  - condition: state
+    entity_id: input_boolean.washingmachine_on
+    state: 'off'
+  action:
+    - service: input_boolean.turn_on
+      data:
+        entity_id: input_boolean.washingmachine_on
+
+- alias: Washingmachine is finished
+  initial_state: 'on'
+  hide_entity: false
+  trigger:
+    platform: numeric_state
+    entity_id: sensor.wasmachine_energy_power
+    below: 5
+    for:
+      hours: 0
+      minutes: 2
+      seconds: 0
+  condition:
+    - condition: state
+      entity_id: input_boolean.washingmachine_on
+      state: 'on'
+  action:
+  - service: notify.family
+    data:
+      title: 'Home Assistant'
+      message: 'De wasmachine is klaar!'
+  - service: tts.google_say
+    data:
+      message: "De wasmachine is klaar"
+      entity_id: media_player.googlehome8236
+      language: nl  
+  - service: input_boolean.turn_off
+    data:
+      entity_id: input_boolean.washingmachine_on

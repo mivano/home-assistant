@@ -1,0 +1,179 @@
+#
+# Turn on evening lighting regardless if someone is home at SUNSET
+#
+- alias: 'Lichten aan bij donker worden'
+  initial_state: 'on'
+  trigger:
+    platform: sun
+    event: sunset
+    offset: "-00:10:00"
+  condition:
+  action:
+    - service: scene.turn_on
+      entity_id: scene.Evening_Lights
+    - service: variable.set_variable
+      data:
+        variable: house_state
+        value: "Home Evening"
+
+#
+# Turn off evening lighting regardless if someone is home 
+#
+- alias: 'Lichten uit en slapen'
+  initial_state: 'on'
+  trigger:
+    platform: time
+    at: '01:15:00'
+  condition:
+  action:
+    - service: scene.turn_on
+      entity_id: scene.goodnight
+    - service: variable.set_variable
+      data:
+        variable: house_state
+        value: "Home Night"
+
+#
+# Turn on buitendeur light
+#
+- alias: 'Deur licht aan bij donker worden'
+  initial_state: 'on'
+  trigger:
+    platform: sun
+    event: sunset
+    offset: "-00:10:00"
+  condition:
+  action:
+    - service: light.turn_on
+      entity_id: light.buitenlampdeur
+
+#
+# Turn off buitendeur light
+#
+- alias: 'Deur licht uit bij licht worden'
+  initial_state: 'on'
+  trigger:
+    platform: sun
+    event: sunrise
+    offset: "00:10:00"
+  condition:
+  action:
+    - service: light.turn_off
+      entity_id: light.buitenlampdeur
+
+#
+# Turn on gang light
+#
+- alias: 'Zolder gang licht aan bij donker worden'
+  initial_state: 'on'
+  trigger:
+    platform: sun
+    event: sunset
+    offset: "-00:10:00"
+  condition:
+  action:
+    - service: switch.turn_on
+      entity_id: switch.sonoffswitch2
+
+#
+# Turn off gang light
+#
+- alias: 'Zolder gang licht uit bij licht worden'
+  initial_state: 'on'
+  trigger:
+    platform: sun
+    event: sunrise
+  condition:
+  action:
+    - service: switch.turn_off
+      entity_id: switch.sonoffswitch2     
+
+#
+# Turn on tuin light
+#
+- alias: 'Tuinverlichting aan bij donker worden'
+  initial_state: 'on'
+  trigger:
+    platform: sun
+    event: sunset
+    offset: "00:10:00"
+  condition:
+  action:
+    - service: light.turn_on
+      entity_id: light.Tuinlampen
+    - service: light.turn_on
+      entity_id: light.Tuinpad
+#
+# Turn off tuin light
+#
+- alias: 'Tuinverlichting uit op timer'
+  initial_state: 'on'
+  trigger:
+    platform: time
+    at: '20:00:00'
+  condition:
+  action:
+    - service: light.turn_off
+      entity_id: light.Tuinlampen
+    - service: light.turn_off
+      entity_id: light.Tuinpad
+
+#
+# Turn on tuinpad light
+#
+- alias: 'Tuinpad aan bij nog steeds donker'
+  initial_state: 'on'
+  trigger:
+    platform: time
+    at: '6:45:00'
+  condition:
+    - condition: time
+      weekday:
+      - mon
+      - tue
+      - wed
+      - thu
+      - fri
+    - condition: sun
+      before: sunrise
+  action:
+    - service: light.turn_on
+      entity_id: light.Tuinpad
+    - service: light.turn_on
+      entity_id: light.Tuinlampen      
+
+#
+# Turn off tuinpad light
+#
+- alias: 'Tuinpad uit bij nog steeds donker of timer'
+  initial_state: 'on'
+  trigger:
+    - platform: time
+      at: '8:45:00'
+    - platform: sun
+      event: sunrise
+  condition:
+  action:
+    - service: light.turn_off
+      entity_id: light.Tuinpad 
+    - service: light.turn_off
+      entity_id: light.Tuinlampen 
+
+#
+# Turn on tuinpad light
+#
+- alias: 'Licht woonkamer bij beweging in ochtend'
+  initial_state: 'on'
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.woonkamer_motion_sensor_status
+      to: 'detected'
+  condition:
+    - condition: sun
+      before: sunrise
+    - condition: time
+      after: '06:00:00'
+      before: '09:00:00'
+  action:
+    - service: scene.turn_on
+      entity_id: scene.morning_lights

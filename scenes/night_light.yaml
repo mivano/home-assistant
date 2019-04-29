@@ -1,0 +1,15 @@
+#
+# Night Light
+#
+- name: Night Light
+  entities:
+    light.woonkamer:
+      state: on
+      brightness: 30
+    light.keuken:
+      state: on
+      brightness: 30
+    light.eetkamer:
+      state: on
+      brightness: 30
+    

@@ -1,0 +1,116 @@
+- alias: 'Start HomeKit'
+  initial_state: 'off'
+  trigger:
+    - platform: event
+      event_type: zwave.network_ready
+    - platform: event
+      event_type: zwave.network_complete
+  action:
+    - service: homekit.start
+
+
+- alias: "Power state on HA start-up"
+  initial_state: 'on'
+  trigger:
+    platform: homeassistant
+    event: start
+  action:
+    - service: mqtt.publish
+      data:
+        topic: "cmnd/sonoffs/SetOption19"
+        payload: "1"
+    - service: mqtt.publish
+      data:
+        topic: "cmnd/sonoffs/SetOption55"
+        payload: "1"
+    - service: mqtt.publish
+      data:
+        topic: "cmnd/sonoffs/state"
+        payload: "" 
+    - service: mqtt.publish
+      data:
+        topic: "cmnd/sonoffs/state"
+        payload: ""
+    - service: mqtt.publish
+      data:
+        topic: cmnd/sonoffs/POWER
+    - service: mqtt.publish
+      data:
+        topic: cmnd/sonoffs/POWER2
+    - service: mqtt.publish
+      data:
+        topic: cmnd/sonoffs/POWER3
+
+
+
+- alias: "Nuimo_rotate_right"
+  initial_state: 'off'
+  trigger:
+    platform: event
+    event_type: nuimo_input
+    event_data:
+      type: ROTATE
+  condition:
+    condition: template
+    value_template: '{{ trigger.event.data.value > 100 }}'
+  action:
+    service: nuimo_controller.led_matrix
+    data:
+      matrix:
+            '........
+             0000000.
+             .000000.
+             ..00000.
+             .0.0000.
+             .00.000.
+             .000000.
+             .000000.
+             ........'
+      interval: 0.5
+
+- id: enable_zigbee_join
+  alias: Enable Zigbee joining
+  hide_entity: true
+  trigger:
+    platform: state
+    entity_id: input_boolean.zigbee_permit_join
+    to: 'on'
+  action:
+  - service: mqtt.publish
+    data:
+      topic: zigbee2mqtt/bridge/config/permit_join
+      payload: 'true'
+  - service: timer.start
+    data:
+      entity_id: timer.zigbee_permit_join
+- id: disable_zigbee_join
+  alias: Disable Zigbee joining
+  trigger:
+  - entity_id: input_boolean.zigbee_permit_join
+    platform: state
+    to: 'off'
+  action:
+  - data:
+      payload: 'false'
+      topic: zigbee2mqtt/bridge/config/permit_join
+    service: mqtt.publish
+  - data:
+      entity_id: timer.zigbee_permit_join
+    service: timer.cancel
+  hide_entity: true
+- id: disable_zigbee_join_timer
+  alias: Disable Zigbee joining by timer
+  hide_entity: true
+  trigger:
+  - platform: event
+    event_type: timer.finished
+    event_data:
+      entity_id: timer.zigbee_permit_join
+  action:
+  - service: mqtt.publish
+    data:
+      topic: zigbee2mqtt/bridge/config/permit_join
+      payload: 'false'
+  - service: input_boolean.turn_off
+    data:
+      entity_id: input_boolean.zigbee_permit_join

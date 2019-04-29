@@ -1,0 +1,53 @@
+# Dim lights down over 5 minutes
+# Turn on bedroom light
+# Set house state
+goodnight:
+  alias: Goodnight Sequence
+  sequence:
+    # LIGHTS!!!
+    # Turn off switches
+    - service: homeassistant.turn_off
+      entity_id: light.kast
+  
+    # Turn off non-milight lights with transitions
+    - service: light.turn_off
+      data:
+         entity_id: light.eetkamer_tafel_keukenkant,light.eetkamer_tafel_woonkamer_kant,light.naast_tv,light.onder_kast,light.plafond,light.plafond_hoek,light.staande_lamp_bank
+         transition: 5
+    - service: light.turn_off
+      data:
+         entity_id: light.lamp_aap,light.naast_gasfornuis
+         transition: 45
+   
+    # Stop SONOS 
+    - service: media_player.media_pause
+      data:
+         entity_id: media_player.huiskamer,media_player.woonkamer,media_player.keuken,media_player.woonkamer_2
+
+    # - service: media_player.turn_off
+    #   data:
+    #      entity_id: media_player.philips_tv
+
+    # Turn off media switch
+    - delay:
+         minutes: 1
+    - service: homeassistant.turn_off
+      entity_id: switch.switch_3,switch.sonoffswitch1     
+
+   # Turn on charger
+    - delay:
+         minutes: 1
+    - service: switch.turn_on
+      entity_id: switch.switch     
+
+    # Set house mode to sleeping
+    - service: variable.set_variable
+      data:
+        variable: house_state
+        value: "Sleeping"
+   
+    # Thermostaat
+    - service: climate.set_temperature
+      data:
+        entity_id:  climate.living_room
+        temperature: 17

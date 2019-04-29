@@ -1,0 +1,34 @@
+#
+# Night Time Dim Lights
+#
+- name: Evening Lights
+  entities:
+    light.woonkamer:
+      state: on
+      brightness: 90
+      transition: 5
+    light.keuken:
+      state: on
+      brightness: 95
+      transition: 5
+    light.eetkamer:
+      state: on 
+    light.kast: on
+
+- name: Evening Bright Lights
+  entities:
+    light.woonkamer:
+      state: on
+      brightness: 167
+      transition: 5
+    light.keuken:
+      state: on
+      brightness: 167
+      transition: 5
+    light.eetkamer:
+      state: on
+      brightness: 20
+      transition: 30
+    
+    light.kast: on
+    

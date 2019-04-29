@@ -1,0 +1,14 @@
+#
+# Garden lights
+#
+- name: Front Garden Path On
+  entities:
+    light.tuinpad:
+      state: on
+
+
+- name: Front Garden Path Off
+  entities:
+    light.tuinpad:
+      state: off
+    

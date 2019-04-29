@@ -1,0 +1,7 @@
+- name: All Lights Off
+  entities:
+    light.woonkamer: off
+    light.kast: off
+    light.hart: off
+    light.keuken: off
+    light.eetkamer: off

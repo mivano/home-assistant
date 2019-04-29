@@ -1,0 +1,70 @@
+homeassistant:
+  # Name of the location where Home Assistant is running
+  name: Home
+  # Location required to calculate the time the sun rises and sets
+  latitude: !secret home_latitude
+  longitude: !secret home_longitude
+  # Impacts weather/sunrise data (altitude above sea level in meters)
+  elevation: 14
+  # metric for Metric, imperial for Imperial
+  unit_system: metric
+  # Pick yours from here: http://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+  time_zone: Europe/Amsterdam
+  # Customization file
+  customize: !include customize.yaml
+
+# Configure a default setup of Home Assistant (frontend, api, etc)
+default_config:
+
+http:
+  base_url: https://mivano.duckdns.org:8123
+  ssl_certificate: /ssl/fullchain.pem
+  ssl_key: /ssl/privkey.pem
+
+# Discover some devices automatically
+discovery:
+
+notify:
+  - platform: group
+    name: family
+    services:
+      - service: ios_iphone_van_michiel
+      - service: ios_iphone_van_nathalie
+
+# Sensors
+sensor:
+  # Weather prediction
+  - platform: yr
+
+recorder:
+  purge_interval: 1
+  purge_keep_days: 2
+
+# Text to speech
+tts:
+  - platform: google_translate
+
+group: !include groups.yaml
+automation: !include_dir_merge_list automation
+script: !include scripts.yaml
+
+nest:
+  client_id: !secret nest_client_id
+  client_secret: !secret nest_client_secret
+
+point:
+  client_id: !secret pointclientid
+  client_secret: !secret pointclientsecret 
+
+zwave:
+  usb_path: /dev/ttyACM0
+  network_key: "0xA1, 0x80, 0x2C, 0xCF, 0x19, 0xA6, 0xD3, 0xAA, 0x21, 0x8F, 0x5A, 0x3C, 0xF5, 0x1C, 0x8A, 0xEE"
+
+ring:
+  username: !secret ringusername
+  password: !secret ringpassword
+
+
+volvooncall:
+  username: !secret volvousername
+  password: !secret volvopassword

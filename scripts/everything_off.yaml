@@ -1,0 +1,31 @@
+# Master script for ALL LIGHTS OFF
+# Turns off all with clean up for milight
+# Also turns off additional items via-sub scripts
+#  * group.tracked_users = not_home
+#    * turn off Alexa, bathroom fan, bandwidth throttling
+#  * roku = playing
+#    * turn off grow light, aquarium, bathroom_fan
+everything_off:
+  alias: All Off
+  sequence:
+    # LIGHTS!!!
+    # Turn off switches
+    - service: homeassistant.turn_off
+      entity_id: light.kast
+    # Turn off non-milight lights with transitions
+    - service: light.turn_off
+      data:
+        entity_id: light.eetkamer_tafel_keukenkant,light.eetkamer_tafel_woonkamer_kant,light.lamp_aap,light.naast_tv,light.naast_gasfornuis,light.onder_kast,light.plafond,light.plafond_hoek,light.staande_lamp_bank
+        transition: 6
+   
+    # NOT HOME
+    # If I'm not home, TTS tell Alexa to shut up.
+    # Turn off bandwidth restrictions
+    - service: script.turn_on
+      entity_id: script.everything_off_not_home
+    # MEDIA PLAYING
+    # Turn off additional lights
+    - service: script.turn_on
+      entity_id: script.everything_off_movietime
+
+    

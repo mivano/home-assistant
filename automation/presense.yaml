@@ -1,0 +1,142 @@
+
+#
+# Make sure we enable the switch for the media in the morning again
+#
+- alias: 'Media switch aan in de ochtend'
+  initial_state: 'on'
+  trigger:
+    platform: time
+    at: '06:00:00'
+  condition:
+  action:
+    - service: homeassistant.turn_on
+      entity_id: switch.switch_3
+    - service: homeassistant.turn_off
+      entity_id: light.lamp_aap  
+
+- alias: 'Lamp aap uit in de ochtend'
+  initial_state: 'on'
+  trigger:
+    platform: time
+    at: '06:00:30'
+  condition:
+  action:
+    - service: homeassistant.turn_off
+      entity_id: light.lamp_aap  
+
+#
+# Turn on evening lighting if someone is home at SUNSET
+#
+- alias: 'Sunset Transition'
+  initial_state: 'on'
+  trigger:
+    platform: sun
+    event: sunset
+    offset: "-00:40:00"
+  condition:
+    condition: state
+    entity_id: group.tracked_users
+    state: 'home'
+  action:
+    - service: scene.turn_on
+      entity_id: scene.evening_bright_lights
+    - service: variable.set_variable
+      data:
+        variable: house_state
+        value: "Home Evening"
+
+#
+# Turn on lights when someone comes home
+#
+- alias: 'Welcome Home - Day'
+  initial_state: 'on'
+  trigger:
+    platform: state
+    entity_id: group.tracked_users
+    from: 'away'
+    to: 'home'
+  condition:
+    - condition: sun
+      after: sunrise
+    - condition: sun
+      before: sunset
+  action:
+    - service: variable.set_variable
+      data:
+        variable: house_state
+        value: "Home Day"
+
+# Same thing but different scene for evening
+- alias: 'Welcome Home - Evening'
+  initial_state: 'on'
+  trigger:
+    platform: state
+    entity_id: group.tracked_users
+    from: 'away'
+    to: 'home'
+  condition:
+    - condition: sun
+      after: sunset
+    - condition: sun
+      after: sunrise
+  action:
+    - service: scene.turn_on
+      entity_id: scene.night_dim_lights
+    - service: variable.set_variable
+      data:
+        variable: house_state
+        value: "Home Evening"
+
+
+
+- alias: Morning to Day Transition
+  initial_state: 'on'
+  trigger:
+    platform: time
+    at: '12:00:00'
+  condition:
+    - condition: state
+      entity_id: variable.house_state
+      state: 'Home Morning'
+  action:
+    - service: variable.set_variable
+      data:
+        variable: house_state
+        value: "Home Day"
+
+- alias: Night to Late Transition
+  initial_state: 'on'
+  trigger:
+    platform: time
+    at: '00:00:00'
+  condition:
+    - condition: state
+      entity_id: variable.house_state
+      state: "Home Evening"
+  action:
+    - service: variable.set_variable
+      data:
+        variable: house_state
+        value: "Home Late"
+
+
+- alias: House State to Guest Mode
+  initial_state: 'on'
+  trigger:
+    platform: time_pattern
+    minutes: 5
+  condition:
+    - condition: state
+      entity_id: group.tracked_users
+      state: 'away'
+    - condition: state
+      entity_id: input_boolean.guest_mode
+      state: 'on'
+    - condition: template
+      value_template: "{{ states.variable.house_state.state != 'Guest Mode' }}"
+  action:
+    - service: variable.set_variable
+      data:
+        variable: house_state
+        value: "Guest Mode"
+

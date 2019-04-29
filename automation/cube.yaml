@@ -1,0 +1,41 @@
+- alias: Cube Shake to turn on or off Lamp
+  initial_state: 'on'
+  trigger:
+    platform: state
+    entity_id: sensor.cube
+    to: "shake"        
+  action:
+    - entity_id: light.eetkamer
+      service: light.toggle
+
+- alias: CubeEventRotate
+  initial_state: 'on'
+  trigger:
+    - platform: state
+      entity_id: sensor.cube
+      to: "rotate_right"
+    - platform: state
+      entity_id: sensor.cube
+      to: "rotate_left"
+  condition:
+    - condition: state
+      entity_id: light.eetkamer
+      state: 'on'
+  action:
+    - service: light.turn_on
+      data_template:
+        entity_id: light.eetkamer
+        brightness: >
+          {%- set delta = 40 %}
+          {%if trigger.event.data.angle | int > 0 %}
+            {%- set bright = states.light.eetkamer.attributes.brightness | int + delta %}
+          {% else %}
+            {%- set bright = states.light.eetkamer.attributes.brightness | int - delta %}
+          {% endif %}
+          {% if bright > 255 %}
+            255
+          {% elif bright < 0 %}
+            0
+          {% else %}
+            {{bright}}
+          {% endif %}
